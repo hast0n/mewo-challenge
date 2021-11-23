@@ -1,0 +1,202 @@
+{
+    "0": {
+        "metric": "f1_over_bin_cross",
+        "precision": 1,
+        "score": 0.4381575854000955
+    },
+    "1": {
+        "metric": "f1_score",
+        "precision": 1,
+        "score": 0.5111189918308217
+    },
+    "2": {
+        "metric": "bin_cross",
+        "precision": 1,
+        "score": 0.4242646189647972
+    },
+    "3": {
+        "metric": "matthews_corr",
+        "precision": 1,
+        "score": 0.5381407880932444
+    },
+    "4": {
+        "metric": "f1_over_bin_cross",
+        "precision": 2,
+        "score": 0.4439862544822578
+    },
+    "5": {
+        "metric": "f1_score",
+        "precision": 2,
+        "score": 0.5135599531128983
+    },
+    "6": {
+        "metric": "bin_cross",
+        "precision": 2,
+        "score": 0.4347095752781165
+    },
+    "7": {
+        "metric": "matthews_corr",
+        "precision": 2,
+        "score": 0.5411663189314806
+    },
+    "8": {
+        "metric": "f1_over_bin_cross",
+        "precision": 3,
+        "score": 0.44380878952619635
+    },
+    "9": {
+        "metric": "f1_score",
+        "precision": 3,
+        "score": 0.5138468315785304
+    },
+    "10": {
+        "metric": "bin_cross",
+        "precision": 3,
+        "score": 0.43512394956689227
+    },
+    "11": {
+        "metric": "matthews_corr",
+        "precision": 3,
+        "score": 0.5415920827650864
+    },
+    "12": {
+        "metric": "f1_over_bin_cross",
+        "precision": 4,
+        "score": 0.4439620399628056
+    },
+    "13": {
+        "metric": "f1_score",
+        "precision": 4,
+        "score": 0.5139716069621292
+    },
+    "14": {
+        "metric": "bin_cross",
+        "precision": 4,
+        "score": 0.43528202373142244
+    },
+    "15": {
+        "metric": "matthews_corr",
+        "precision": 4,
+        "score": 0.5417198496182749
+    },
+    "16": {
+        "metric": "f1_over_bin_cross",
+        "precision": 5,
+        "score": 0.443978033232751
+    },
+    "17": {
+        "metric": "f1_score",
+        "precision": 5,
+        "score": 0.5139959625991225
+    },
+    "18": {
+        "metric": "bin_cross",
+        "precision": 5,
+        "score": 0.43529745661993624
+    },
+    "19": {
+        "metric": "matthews_corr",
+        "precision": 5,
+        "score": 0.5417445277624882
+    },
+    "20": {
+        "metric": "f1_over_bin_cross",
+        "precision": 6,
+        "score": 0.4439789871678587
+    },
+    "21": {
+        "metric": "f1_score",
+        "precision": 6,
+        "score": 0.5139964636764657
+    },
+    "22": {
+        "metric": "bin_cross",
+        "precision": 6,
+        "score": 0.43530002153332753
+    },
+    "23": {
+        "metric": "matthews_corr",
+        "precision": 6,
+        "score": 0.5417459033250708
+    },
+    "24": {
+        "metric": "f1_over_bin_cross",
+        "precision": 7,
+        "score": 0.4439789871678587
+    },
+    "25": {
+        "metric": "f1_score",
+        "precision": 7,
+        "score": 0.5139964636764657
+    },
+    "26": {
+        "metric": "bin_cross",
+        "precision": 7,
+        "score": 0.43530002153332753
+    },
+    "27": {
+        "metric": "matthews_corr",
+        "precision": 7,
+        "score": 0.5417459033250708
+    },
+    "28": {
+        "metric": "f1_over_bin_cross",
+        "precision": 8,
+        "score": 0.4439789871678587
+    },
+    "29": {
+        "metric": "f1_score",
+        "precision": 8,
+        "score": 0.5139964636764657
+    },
+    "30": {
+        "metric": "bin_cross",
+        "precision": 8,
+        "score": 0.43530002153332753
+    },
+    "31": {
+        "metric": "matthews_corr",
+        "precision": 8,
+        "score": 0.5417459033250708
+    },
+    "32": {
+        "metric": "f1_over_bin_cross",
+        "precision": 9,
+        "score": 0.4439789871678587
+    },
+    "33": {
+        "metric": "f1_score",
+        "precision": 9,
+        "score": 0.5139964636764657
+    },
+    "34": {
+        "metric": "bin_cross",
+        "precision": 9,
+        "score": 0.43530002153332753
+    },
+    "35": {
+        "metric": "matthews_corr",
+        "precision": 9,
+        "score": 0.5417459033250708
+    },
+    "36": {
+        "metric": "f1_over_bin_cross",
+        "precision": 10,
+        "score": 0.4439789871678587
+    },
+    "37": {
+        "metric": "f1_score",
+        "precision": 10,
+        "score": 0.5139964636764657
+    },
+    "38": {
+        "metric": "bin_cross",
+        "precision": 10,
+        "score": 0.43530002153332753
+    },
+    "39": {
+        "metric": "matthews_corr",
+        "precision": 10,
+        "score": 0.5417459033250708
+    }
+}
