@@ -17,7 +17,7 @@ def timing() -> None:
     print("### Process started ###")
     yield
     ellapsed_time = time() - start
-    print(f"---\nElapsed: {ellapsed_time/60}s\n### Process ended ###")
+    print(f"### Process ended ###\n--- Elapsed: {ellapsed_time/60}s\n")
 # ------------------------------------------------------------------------
 def f1_over_bin_cross(dataframe_y_true, dataframe_y_pred):
     f1 = skm.f1_score(dataframe_y_true, dataframe_y_pred, average="weighted")
