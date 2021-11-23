@@ -1,14 +1,16 @@
 import numpy as np
 import sklearn.metrics as skm
+import tensorflow as tf
 from tensorflow.keras.losses import (
     BinaryCrossentropy,
-    CategoricalCrossentropy,
-    SparseCategoricalCrossentropy,
+    # CategoricalCrossentropy,
+    # SparseCategoricalCrossentropy,
 )
 from multiprocessing import Pool
 from contextlib import contextmanager
 from time import time
 # ------------------------------------------------------------------------
+tf.get_logger().setLevel(3) # Log errors only
 _BC_ = BinaryCrossentropy()
 # ------------------------------------------------------------------------
 @contextmanager
