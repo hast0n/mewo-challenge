@@ -115,20 +115,23 @@ if (len(sys.argv) == 4):
     param = "launch"
     
     try: 
-        mode = int(sys.argv[1])
-        assert(sys.argv[1] in _MODE_DOMAIN_)
+        _val =  int(sys.argv[1])
+        assert(int(sys.argv[1]) in _MODE_DOMAIN_)
+        mode = _val
     except: 
         print(warn_string % ("mode", str_range(_MODE_DOMAIN_),_DEFAULT_MODE_))
 
     try: 
-        metric = _METRICS_[sys.argv[2]]
-        assert(sys.argv[2] in _METRIC_DOMAIN_)
+        _val = sys.argv[2]
+        assert(_val in _METRIC_DOMAIN_)
+        metric = _METRICS_[_val]
     except: 
         print(warn_string % ("metric", '|'.join(_METRIC_DOMAIN_), _DEFAULT_METRIC_.__name__))
 
     try: 
-        precision = int(sys.argv[3])
-        assert(sys.argv[3] in _PRECISION_DOMAIN_)
+        _val = int(sys.argv[3]);
+        assert(_val in _PRECISION_DOMAIN_)
+        precision = _val
     except: 
         print(warn_string % ("precision", str_range(_PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
 
