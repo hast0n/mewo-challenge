@@ -50,15 +50,14 @@ def apply_thresholds(thresholds, input_data):
 
     return output_data.astype('int32')
 # ------------------------------------------------------------------------
-def get_scores(combs, df_y_pred, df_y_true, labels):
+def dump_scores(combs, df_y_pred, df_y_true, labels):
 
     score_dict = {i:{} for i in range(len(combs))}
-            
-    for i, (m, p) in enumerate(combinations) :
 
+    for i, (m, p) in enumerate(combinations) :
         verb = "[DEBUG] Combination %i of %i : \n\tMetric: %s\n\tPrecision: %s"
         print(verb % (i+1, len(combinations), m.__name__, p))
-
+        
         thresholds = dt.compute_multithread(
             input_data  = df_y_pred,
             y_true      = df_y_true,  
@@ -70,12 +69,7 @@ def get_scores(combs, df_y_pred, df_y_true, labels):
         )
 
         y_train = apply_thresholds(thresholds, df_y_pred)
-
-        score = evaluate(
-            df_y_true=df_y_true,
-            df_y_pred=y_train
-        )
-
+        score = evaluate(df_y_true, y_train)
         score_dict[i] = {
             "metric" : m.__name__,
             "precision" : p,
@@ -87,10 +81,13 @@ def get_scores(combs, df_y_pred, df_y_true, labels):
 
     # score_file.write("\n%s | %i : %f" % (m.__name__, p, score))
 # ------------------------------------------------------------------------
-def inspect_scores(metric='all', precision='all'):
+def extract_scores(metric='all', precision='all'):
     with open(JSON_TRAIN_SCORE_FILE, 'r') as score_file :
-        scores = json.load(score_file)
-    
+        scores = pd.dateFrame(json.load(score_file)).T
+    print(scores.sort_values(by='score', ascending=False))
+# ------------------------------------------------------------------------
+def get_best_conf(scores):
+    pass
 # ------------------------------------------------------------------------
 param_string = "[LAUNCH] Using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
 warn_string = "[WARN] launch parameter %s wasn't satisfied, using default (%S)"
@@ -146,13 +143,26 @@ if __name__ == '__main__' :
         elif (mode == 3):
             # Mode 3: TESTING
 
-            combinations = generate_configs(
-                list(_METRICS_.values()),   # metric functions
-                list(range(1, 11))          # precision levels
-            )
+            # combinations = generate_configs(
+            #     list(_METRICS_.values()),   # metric functions
+            #     list(range(1, 11))          # precision levels
+            # )
 
-            get_scores(combinations, df_y_pred, df_y_true, labels)
+            # dump_scores(combinations, df_y_pred, df_y_true, labels)
+
+            scores = extract_scores()
+            best_metric, best_precision = get_best_conf(scores)
+
+            thresholds = dt.compute_multithread(
+                input_data  = df_y_pred,
+                y_true      = df_y_true, 
+                labels      = labels, 
+                metric      = best_metric, 
+                precision   = best_precision, 
+                workers     = 24
+            )
 
     else :
         # Mode 0: DEBUG
-        inspect_scores()
+        pass
+
