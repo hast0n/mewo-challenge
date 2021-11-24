@@ -1,17 +1,30 @@
+import json
+import sys
+import time
+from contextlib import contextmanager
 import numpy as np
 import pandas as pd
-import dynamic_thresholding as dt
 import sklearn.metrics as skm
-import sys, json
-# --------------------------------------------------------------------
+import dynamic_thresholding as dt
+# ------------------------------------------------------------------------
+@contextmanager
+def timing() -> None:
+    start = time()
+    print("### Process started ###")
+    yield
+    ellapsed_time = time() - start
+    print(f"### Process ended ###\n--- Elapsed: {ellapsed_time/60}s\n")
+# ------------------------------------------------------------------------
 _METRICS_ = {
-    'f1_bc' : dt.f1_over_bin_cross,
-    'f1'    : dt.f1_score,
-    'bc'    : dt.bin_cross,
-    'mcc'   : dt.matthews_corr
+    func.__name__ : func for func in [
+        dt.f1_over_bin_cross,
+        dt.f1_score,
+        dt.bin_cross,
+        dt.matthews_corr
+    ]
 }
-
-_DEFAULT_METRIC_ = _METRICS_['f1']
+# ------------------------------------------------------------------------
+_DEFAULT_METRIC_ = _METRICS_[dt.f1_score.__name__]
 _DEFAULT_PRECISION_ = 3
 _DEFAULT_MODE_ = 3 # testing
 
@@ -54,9 +67,9 @@ def dump_scores(combs, df_y_pred, df_y_true, labels):
 
     score_dict = {i:{} for i in range(len(combs))}
 
-    for i, (m, p) in enumerate(combinations) :
+    for i, (m, p) in enumerate(combs) :
         verb = "[DEBUG] Combination %i of %i : \n\tMetric: %s\n\tPrecision: %s"
-        print(verb % (i+1, len(combinations), m.__name__, p))
+        print(verb % (i+1, len(combs), m.__name__, p))
         
         thresholds = dt.compute_multithread(
             input_data  = df_y_pred,
@@ -83,24 +96,24 @@ def dump_scores(combs, df_y_pred, df_y_true, labels):
 # ------------------------------------------------------------------------
 def extract_scores(metric='all', precision='all'):
     with open(JSON_TRAIN_SCORE_FILE, 'r') as score_file :
-        scores = pd.dateFrame(json.load(score_file)).T
-    print(scores.sort_values(by='score', ascending=False))
+        scores = pd.DataFrame(json.load(score_file)).T
+    return scores.sort_values(by='score', ascending=False)
 # ------------------------------------------------------------------------
 def get_best_conf(scores):
     pass
 # ------------------------------------------------------------------------
-param_string = "[LAUNCH] Using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
-warn_string = "[WARN] launch parameter %s wasn't satisfied, using default (%S)"
+param_string = "[DEBUG] using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
+warn_string = "[WARN] launch parameter %s wasn't satisfied (must be in <%s>), using default (%S)"
 param, mode, precision, metric = "default", _DEFAULT_MODE_, _DEFAULT_PRECISION_, _DEFAULT_METRIC_
 
 if (len(sys.argv) > 1):
-    params = "launch"
+    param = "launch"
     try: mode = int(sys.argv[1]) if sys.argv else _DEFAULT_MODE_
-    except (IndexError): print(warn_string % ("\nmode\n", _DEFAULT_MODE_))
-    try: precision = int(sys.argv[2]) if sys.argv else _DEFAULT_PRECISION_
-    except (IndexError): print(warn_string % ("\nprecision\n", _DEFAULT_PRECISION_))
-    try: metric = _METRICS_[sys.argv[3]] if sys.argv[3] in _METRICS_.keys() else _DEFAULT_METRIC_
-    except (IndexError): print(warn_string % ("\nmetric\n", _DEFAULT_METRIC_.__name__))
+    except (IndexError): print(warn_string % ("\nmode\n", "[0:3]",_DEFAULT_MODE_))
+    try: metric = _METRICS_[sys.argv[2]] if sys.argv[2] in _METRICS_.keys() else _DEFAULT_METRIC_
+    except (IndexError): print(warn_string % ("\nmetric\n", ' | '.join(_METRICS_.keys()), _DEFAULT_METRIC_.__name__))
+    try: precision = int(sys.argv[3]) if sys.argv else _DEFAULT_PRECISION_
+    except (IndexError): print(warn_string % ("\nprecision\n", "]0:10[", _DEFAULT_PRECISION_))
 
 print(param_string % (param, mode, metric.__name__, precision))
 # ------------------------------------------------------------------------
@@ -115,8 +128,8 @@ if __name__ == '__main__' :
 
         if (mode in [1, 2]):
 
-            with dt.timing():
-                # thresholds = dyn_thresh_single(df_y_pred, df_y_true, labels, precision=3)
+            with timing():
+                # thresholds = dt.dyn_thresh_single(df_y_pred, df_y_true, labels, precision=3)
                 thresholds = dt.compute_multithread(
                     input_data  = df_y_pred,
                     y_true      = df_y_true, 
@@ -128,13 +141,13 @@ if __name__ == '__main__' :
 
             if (mode == 1):
                 # Mode 1: Compute train
-                df_y_train = dt.apply_thresholds(thresholds, df_y_pred)
+                df_y_train = apply_thresholds(thresholds, df_y_pred)
                 print("F1 score: %s" % dt.evaluate(df_y_true, df_y_train))
                 # df_y_train.to_csv(CSV_OUTPUT_TRAIN % (metric.__name__, precision))
 
             elif (mode == 2):
                 # Mode 2: Compute test
-                df_y_test = dt.apply_thresholds(thresholds, df_x_test)
+                df_y_test = apply_thresholds(thresholds, df_x_test)
                 df_y_test.to_csv(CSV_OUTPUT_TEST % (metric.__name__, precision))
 
                 df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
@@ -151,18 +164,26 @@ if __name__ == '__main__' :
             # dump_scores(combinations, df_y_pred, df_y_true, labels)
 
             scores = extract_scores()
-            best_metric, best_precision = get_best_conf(scores)
+            best_metric, best_precision, score = scores.iloc[0].values
 
             thresholds = dt.compute_multithread(
                 input_data  = df_y_pred,
                 y_true      = df_y_true, 
                 labels      = labels, 
-                metric      = best_metric, 
+                metric      = _METRICS_[best_metric],
                 precision   = best_precision, 
-                workers     = 24
+                workers     = 12,
+                verbose     = False
             )
+
+            df_y_test = apply_thresholds(thresholds, df_x_test)
+            df_y_test.to_csv(CSV_OUTPUT_TEST % (best_metric.__name__, best_precision))
+
+            df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
+            df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (best_metric.__name__, best_precision))
 
     else :
         # Mode 0: DEBUG
         pass
 
+print("[DEBUG] Done.")

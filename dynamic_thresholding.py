@@ -7,19 +7,9 @@ from tensorflow.keras.losses import (
     # SparseCategoricalCrossentropy,
 )
 from multiprocessing import Pool
-from contextlib import contextmanager
-from time import time
 # ------------------------------------------------------------------------
 tf.get_logger().setLevel(3) # Log errors only
 _BC_ = BinaryCrossentropy()
-# ------------------------------------------------------------------------
-@contextmanager
-def timing() -> None:
-    start = time()
-    print("### Process started ###")
-    yield
-    ellapsed_time = time() - start
-    print(f"### Process ended ###\n--- Elapsed: {ellapsed_time/60}s\n")
 # ------------------------------------------------------------------------
 def f1_over_bin_cross(dataframe_y_true, dataframe_y_pred):
     f1 = skm.f1_score(dataframe_y_true, dataframe_y_pred, average="weighted")
