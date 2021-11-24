@@ -1,4 +1,5 @@
 import json
+from logging import error
 import sys
 import time
 from contextlib import contextmanager
@@ -15,27 +16,31 @@ def timing() -> None:
     ellapsed_time = time() - start
     print(f"### Process ended ###\n--- Elapsed: {ellapsed_time/60}s\n")
 # ------------------------------------------------------------------------
-_METRICS_ = {
-    func.__name__ : func for func in [
-        dt.f1_over_bin_cross,
-        dt.f1_score,
-        dt.bin_cross,
-        dt.matthews_corr
-    ]
-}
+_METRICS_ = {func.__name__ : func for func in [
+    dt.f1_over_bin_cross,
+    dt.f1_score,
+    dt.bin_cross,
+    dt.matthews_corr
+]}
 # ------------------------------------------------------------------------
 _DEFAULT_METRIC_ = _METRICS_[dt.f1_score.__name__]
 _DEFAULT_PRECISION_ = 3
 _DEFAULT_MODE_ = 3 # testing
 
-DRIVE_FOLDER_PATH = './'
+_METRIC_DOMAIN_ = _METRICS_.keys()
+_PRECISION_DOMAIN_ = range(1, 11)
+_MODE_DOMAIN_ = range(0, 4)
 
-CSV_FILE_Y_TRUE = DRIVE_FOLDER_PATH + 'train_y_YZCqwbD.csv'
-CSV_FILE_Y_PRED = DRIVE_FOLDER_PATH + 'train_X_beAW6y8.csv'
-CSV_FILE_X_TEST = DRIVE_FOLDER_PATH + 'test_X_nPKMRWK.csv'
-CSV_FILE_LABELS = DRIVE_FOLDER_PATH + 'annex/mewo-labels.csv'
-CSV_TEST_OUTPUT_FOLD = DRIVE_FOLDER_PATH + 'results/'
-CSV_TRAIN_OUTPUT_FOLD = DRIVE_FOLDER_PATH + '.bench/'
+def str_range(r:range): return "[%i:%i]" % (r[0], r[-1])
+# ------------------------------------------------------------------------
+MAIN_FOLDER_PATH = './'
+
+CSV_FILE_Y_TRUE = MAIN_FOLDER_PATH + 'train_y_YZCqwbD.csv'
+CSV_FILE_Y_PRED = MAIN_FOLDER_PATH + 'train_X_beAW6y8.csv'
+CSV_FILE_X_TEST = MAIN_FOLDER_PATH + 'test_X_nPKMRWK.csv'
+CSV_FILE_LABELS = MAIN_FOLDER_PATH + 'annex/mewo-labels.csv'
+CSV_TEST_OUTPUT_FOLD = MAIN_FOLDER_PATH + 'results/'
+CSV_TRAIN_OUTPUT_FOLD = MAIN_FOLDER_PATH + '.bench/'
 
 JSON_TRAIN_SCORE_FILE = CSV_TRAIN_OUTPUT_FOLD + 'mp_scores.json'
 CSV_OUTPUT_TRAIN = CSV_TRAIN_OUTPUT_FOLD + 'train_y_dt_%s_p%s.csv'
@@ -103,17 +108,29 @@ def get_best_conf(scores):
     pass
 # ------------------------------------------------------------------------
 param_string = "[DEBUG] using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
-warn_string = "[WARN] launch parameter %s wasn't satisfied (must be in <%s>), using default (%S)"
+warn_string = "[WARN] launch parameter \"%s\" wasn't satisfied (must be in %s), using default (%s)"
 param, mode, precision, metric = "default", _DEFAULT_MODE_, _DEFAULT_PRECISION_, _DEFAULT_METRIC_
 
-if (len(sys.argv) > 1):
+if (len(sys.argv) == 4):
     param = "launch"
-    try: mode = int(sys.argv[1]) if sys.argv else _DEFAULT_MODE_
-    except (IndexError): print(warn_string % ("\nmode\n", "[0:3]",_DEFAULT_MODE_))
-    try: metric = _METRICS_[sys.argv[2]] if sys.argv[2] in _METRICS_.keys() else _DEFAULT_METRIC_
-    except (IndexError): print(warn_string % ("\nmetric\n", ' | '.join(_METRICS_.keys()), _DEFAULT_METRIC_.__name__))
-    try: precision = int(sys.argv[3]) if sys.argv else _DEFAULT_PRECISION_
-    except (IndexError): print(warn_string % ("\nprecision\n", "]0:10[", _DEFAULT_PRECISION_))
+    
+    try: 
+        mode = int(sys.argv[1])
+        assert(sys.argv[1] in _MODE_DOMAIN_)
+    except: 
+        print(warn_string % ("mode", str_range(_MODE_DOMAIN_),_DEFAULT_MODE_))
+
+    try: 
+        metric = _METRICS_[sys.argv[2]]
+        assert(sys.argv[2] in _METRIC_DOMAIN_)
+    except: 
+        print(warn_string % ("metric", '|'.join(_METRIC_DOMAIN_), _DEFAULT_METRIC_.__name__))
+
+    try: 
+        precision = int(sys.argv[3])
+        assert(sys.argv[3] in _PRECISION_DOMAIN_)
+    except: 
+        print(warn_string % ("precision", str_range(_PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
 
 print(param_string % (param, mode, metric.__name__, precision))
 # ------------------------------------------------------------------------
