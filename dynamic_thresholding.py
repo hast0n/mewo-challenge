@@ -3,13 +3,19 @@ import sklearn.metrics as skm
 import tensorflow as tf
 from tensorflow.keras.losses import (
     BinaryCrossentropy,
-    # CategoricalCrossentropy,
-    # SparseCategoricalCrossentropy,
+    CategoricalCrossentropy,
+    SparseCategoricalCrossentropy,
 )
+import os
 from multiprocessing import Pool
 # ------------------------------------------------------------------------
-tf.get_logger().setLevel(3) # Log errors only
-_BC_ = BinaryCrossentropy()
+# Log errors only
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
+tf.get_logger().setLevel(3) 
+# ------------------------------------------------------------------------
+_BC_    = BinaryCrossentropy()
+_CC_    = CategoricalCrossentropy()
+_SCC_   = SparseCategoricalCrossentropy()
 # ------------------------------------------------------------------------
 def f1_over_bin_cross(dataframe_y_true, dataframe_y_pred):
     f1 = skm.f1_score(dataframe_y_true, dataframe_y_pred, average="weighted")
@@ -21,7 +27,16 @@ def matthews_corr(dataframe_y_true, dataframe_y_pred):
     return skm.matthews_corrcoef(dataframe_y_true, dataframe_y_pred)
 def bin_cross(dataframe_y_true, dataframe_y_pred):
     bc = _BC_(dataframe_y_true, dataframe_y_pred)
-    return 1/bc
+    return bc
+def cat_cross(dataframe_y_true, dataframe_y_pred):
+    cc = _CC_(dataframe_y_true, dataframe_y_pred)
+    return 1/cc
+def sparse_cat_cross(dataframe_y_true, dataframe_y_pred):
+    scc = _SCC_(dataframe_y_true, dataframe_y_pred)
+    return 1/scc
+def pr_auc(dataframe_y_true, dataframe_y_pred):
+    aps = skm.average_precision_score(dataframe_y_true, dataframe_y_pred)
+    return aps
 # ====================== THRESOLDING METHODS =============================
 def fixed_thresholding(input_data, labels, thresholds):
 
@@ -55,7 +70,7 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
             index = input_column.index[input_column >= t]
             column = output_format.copy()
             column.loc[index] = 1
-            score = metric(y_true_col, column) # get F1 score of threshold t
+            score = metric(y_true_col, column)
             # ---
             thresh_scores.append(score) # append threshold scores to list
 
