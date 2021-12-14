@@ -53,7 +53,7 @@ Precision level can be computed up to the 10th decimal.
 The program has 3 execution modes:
 1. Computes the overall F1 Score on the train data for one `(metric, precision)` pair.
 2. Computes thresholds for one `(metric, precision)` pair and applies them to the test set for an export. Can then be submitted for grading
-3. Computes every `(metric, precision)` pair and returns the one with the best F1 Score. Also applies & exports the thresholds for the test set.
+3. Computes every `(metric, precision)` pair and returns the one with the best F1 Score. Also applies & exports the thresholds for the test set. The operation may take a while.
 4. (Debug)
 
 ## Run
@@ -63,8 +63,20 @@ To run the program, use the following scheme:
 python main.py <MODE> <METRIC> <PRECISION>
 ```
 
-For exapmple, to export the `(matthews_corr, 3)` pair, run the following:
+For example, to export the `(matthews_corr, 3)` pair, run the following:
 
 ```bash
 python main.py 2 matthews_corr 3
+```
+
+To run the 3rd execution mode, use the following:
+
+```bash
+python main.py 3
+```
+
+In case of an invalid arguments passed, the program will default to the following run profile:
+
+```bash
+python main.py 3 f1_score 3
 ```

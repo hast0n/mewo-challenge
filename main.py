@@ -6,7 +6,7 @@ from contextlib import contextmanager
 import numpy as np
 import pandas as pd
 import sklearn.metrics as skm
-import dynamic_thresholding as dt
+import dynamic_thresholding as DT
 import typing as T
 from time import time
 # ------------------------------------------------------------------------
@@ -19,16 +19,16 @@ def timing() -> None:
     print(f"### Process ended ###\n--- Elapsed: {ellapsed_time/60} minutes\n")
 # ------------------------------------------------------------------------
 _METRICS_ = {func.__name__: func for func in [
-    dt.f1_over_bin_cross,
-    dt.f1_score,
-    dt.bin_cross,
-    dt.matthews_corr,
-    dt.pr_auc
+    DT.f1_over_bin_cross,
+    DT.f1_score,
+    DT.bin_cross,
+    DT.matthews_corr,
+    DT.pr_auc
     # dt.cat_cross,
     # dt.sparse_cat_cross
 ]}
 # ------------------------------------------------------------------------
-_DEFAULT_METRIC_ = _METRICS_[dt.f1_score.__name__]
+_DEFAULT_METRIC_ = _METRICS_[DT.f1_score.__name__]
 _DEFAULT_PRECISION_ = 3
 _DEFAULT_MODE_ = 3  # testing
 
@@ -95,7 +95,7 @@ def dump_scores(combs, df_y_pred, df_y_true, labels, append=True):
         verb = "[DEBUG] Combination %i of %i : \n\tMetric: %s\n\tPrecision: %s"
         print(verb % (i+1, len(combs), m.__name__, p))
 
-        thresholds = dt.compute_multithread(
+        thresholds = DT.compute_multithread(
             input_data=df_y_pred,
             y_true=df_y_true,
             labels=labels,
@@ -168,7 +168,7 @@ if __name__ == '__main__':
 
             with timing():
                 # thresholds = dt.dyn_thresh_single(df_y_pred, df_y_true, labels, precision=3)
-                thresholds = dt.compute_multithread(
+                thresholds = DT.compute_multithread(
                     input_data=df_y_pred,
                     y_true=df_y_true,
                     labels=labels,
@@ -180,7 +180,7 @@ if __name__ == '__main__':
             if (mode == 1):
                 # Mode 1: Compute train
                 df_y_train = apply_thresholds(thresholds, df_y_pred)
-                print("F1 score: %s" % dt.evaluate(df_y_true, df_y_train))
+                print("F1 score: %s" % DT.evaluate(df_y_true, df_y_train))
                 # df_y_train.to_csv(CSV_OUTPUT_TRAIN % (metric.__name__, precision))
 
             elif (mode == 2):
@@ -194,7 +194,7 @@ if __name__ == '__main__':
                                  (metric.__name__, precision))
 
         elif (mode == 3):
-            # Mode 3: TESTING
+            # Mode 3: Compute all & Output best
 
             combinations = generate_configs(
                 list(_METRICS_.values()),   # metric functions
@@ -205,9 +205,9 @@ if __name__ == '__main__':
 
             scores = extract_scores()
             best_metric, best_precision, score = scores.iloc[0].values
-            print('metric: %s precision: %i'%(best_metric, best_precision))
+            print('# Best score: metric: %s precision: %i'%(best_metric, best_precision))
 
-            thresholds = dt.compute_multithread(
+            thresholds = DT.compute_multithread(
                 input_data  = df_y_pred,
                 y_true      = df_y_true,
                 labels      = labels,
@@ -228,7 +228,6 @@ if __name__ == '__main__':
         pass
 
 print("[DEBUG] Done.")
-
 
 
 # ------------------------------------------------------------------------
