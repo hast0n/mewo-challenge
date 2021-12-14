@@ -6,6 +6,7 @@ from contextlib import contextmanager
 import numpy as np
 import pandas as pd
 import sklearn.metrics as skm
+from tensorflow.python.eager.function import Function
 import dynamic_thresholding as DT
 import typing as T
 from time import time
@@ -31,7 +32,7 @@ _METRICS_ = {func.__name__: func for func in [
 # ------------------------------------------------------------------------
 _DEFAULT_METRIC_ = _METRICS_[DT.f1_score.__name__]
 _DEFAULT_PRECISION_ = 3
-_DEFAULT_MODE_ = 0 # 
+_DEFAULT_MODE_ = 0
 
 _METRIC_DOMAIN_ = _METRICS_.keys()
 _PRECISION_DOMAIN_ = range(1, 11)
@@ -142,11 +143,15 @@ def get_score(df_x_train, df_y_true, labels, metric, precision):
 
     return thresholds, evaluate(df_y_true, df_y_train)
 # ------------------------------------------------------------------------
-def export_to_csv(dataset, thresholds, metric, precision):
+def export_to_csv(dataset, metric=None, precision=0, thresholds=None):
+
+    metric_name = metric.__name__ if callable(metric) else str(metric)
     df_y = apply_thresholds(thresholds, dataset)
-    df_y.to_csv(CSV_OUTPUT_TEST % (metric.__name__, precision))
-    df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
-    df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (metric.__name__, precision))
+    df_y.to_csv(CSV_OUTPUT_TEST % (metric_name, precision))
+
+    if thresholds is not None:
+        df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
+        df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (metric_name, precision))
 # ------------------------------------------------------------------------
 def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
     
@@ -171,7 +176,7 @@ def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
         verbose     = True
     )
 
-    export_to_csv(df_x_test, thresholds, _METRICS_[best_metric], best_precision)
+    export_to_csv(df_x_test, _METRICS_[best_metric], best_precision, thresholds)
 #
 if __name__ == '__main__':
     
@@ -228,34 +233,38 @@ if __name__ == '__main__':
             )
 
             if (mode == 2):
-                export_to_csv(df_x_test, thresholds, metric, precision)
+                export_to_csv(df_x_test, metric, precision, thresholds)
 
         elif (mode == 3):
             compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels)
 
     else:
         
-        # Mode 0: Test section
-        df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
-        df_x_train = pd.read_csv(CSV_FILE_Y_PRED, index_col=0, sep=',') # fuzzy classification to apply thresholding to
-        # df_x_test = pd.read_csv(CSV_FILE_X_TEST, index_col=0, sep=',') # data to predict for grading over at the challenge page
-        labels = pd.read_csv(CSV_FILE_LABELS, index_col=0, sep=',')
+        _thresh = 0.5
+        df_y_test = DT.fixed_thresholding(df_x_train, labels, _thresh)
+        # df_y_test = DT.fixed_thresholding(df_x_train, labels, [_thresh]*248)
+        score = evaluate(df_y_true, df_y_test)
+        print(np.any(df_y_test.apply(any)))
+        print("[DEBUG] F1 score: %f" % score)
+
+        # filename = CSV_TEST_OUTPUT_FOLD + 'test_y_ft_{:.1f}.csv'
+        # df_y_test.to_csv(filename.format(_thresh))
 
         # Are there any columns empty?
         # zero_cols = df_y_true.any(axis='index')
-        # print(zero_cols.all()) # Yes!
+        # print(zero_cols.all()) # Nope!
 
         # Are there any lines empty?
         # zero_rows = df_y_true.any(axis='columns')
-        # print(zero_rows.all()) # Yes!
+        # print(zero_rows.all()) # Nope!
 
-        tags = labels.columns.to_list()
-        classes = labels.T['class']
-        categories = labels.T['category']
-        # --- 
-        genres = classes[classes == 'Genres'].index.to_list()
-        instruments = classes[classes == 'Instruments'].index.to_list()
-        moods = classes[classes == 'Moods'].index.to_list()
+        # tags = labels.columns.to_list()
+        # classes = labels.T['class']
+        # categories = labels.T['category']
+        # # --- 
+        # genres = classes[classes == 'Genres'].index.to_list()
+        # instruments = classes[classes == 'Instruments'].index.to_list()
+        # moods = classes[classes == 'Moods'].index.to_list()
         # ---
         # genres_corr = df_y_true[genres].corr() # corrélation entre les colonnes associées à la classe 'Genres'
         # instruments_corr = df_y_true[instruments].corr() # corrélation entre les colonnes associées à la classe 'Instruments'

@@ -75,8 +75,8 @@ To run the 3rd execution mode, use the following:
 python main.py 3
 ```
 
-In case of an invalid arguments passed, the program will default to the following run profile:
+In case of an invalid arguments passed, the program will default to the following run profile
 
 ```bash
-python main.py 3 f1_score 3
+python main.py 1 f1_score 3
 ```

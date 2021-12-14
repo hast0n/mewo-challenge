@@ -38,18 +38,18 @@ def pr_auc(dataframe_y_true, dataframe_y_pred):
     aps = skm.average_precision_score(dataframe_y_true, dataframe_y_pred)
     return aps
 # ====================== THRESOLDING METHODS =============================
-def fixed_thresholding(input_data, labels, thresholds):
+def fixed_thresholding(input_data, labels, threshold):
 
-    output_data = input_data[:][labels.columns[:]].copy()
+    output_data = input_data > threshold    
 
-    for col in output_data.columns:
-        output_data[col].values[:] = 0
+    # for col in output_data.columns:
+    #     output_data[col].values[:] = 0
     
-    for i,j in enumerate(labels.columns[:]):
-        output_data[j] = [v > thresholds[i] for v in output_data[j]]
-        print(output_data)
-        
-    return output_data
+    # for i,j in enumerate(labels.columns[:]):
+    #     _tmp = [int(v >= thresholds[i]) for v in output_data[j]]
+    #     output_data[j] = _tmp
+
+    return output_data.astype(int)
 # ------------------------------------------------------------------------
 def threshold_worker(input_column, y_true_col, output_format, metric, precision, verbose):
     
@@ -86,7 +86,7 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
     if (verbose): 
         line = "{:<30s}{:>10.%if}" % precision
         print(line.format(input_column.name, best_t))
-        
+
     return best_t
 # ------------------------------------------------------------------------
 def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3, workers=32, verbose=True):
