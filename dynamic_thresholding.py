@@ -59,7 +59,7 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
     # [x, x, x, x, x] --> [x, [x, x, x, x, x], x, x, x] --> [x, [x, x, [x, x, x, x, x], x, x], x, x, x]
 
     unit = 0.1; best_t = 0
-    dic = np.arange(1, 10) * unit        
+    dic = np.arange(1, 10) * unit
 
     # do for each precision level
     for p in range(precision):
@@ -82,8 +82,8 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
         dic = dic[dic > 0]
 
         unit /= 10
-
-    if (verbose): print("%s : %s -- DONE" % (input_column.name , best_t))
+    
+    if (verbose): print("{:<30s}{:>10.10f}".format(input_column.name, best_t))
     return best_t
 # ------------------------------------------------------------------------
 def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3, workers=32, verbose=True):
@@ -95,6 +95,14 @@ def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3
     for col in blank_data.columns:
         blank_data[col].values[:] = 0
     # ---
+
+    dash = '-' * 42
+
+    if verbose:
+        print(
+            '{}\n{:<30s}{:>12.10s}\n{}'
+            .format(dash, 'TAG NAME', 'THRESHOLD', dash)
+        )
 
     with Pool(processes=workers) as pool:
         
@@ -116,6 +124,8 @@ def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3
             genre:res.get(timeout=None)
             for (genre, res) in results.items()
         }
+
+    if verbose: print(dash)
 
     # ---
     return thresholds
