@@ -17,7 +17,7 @@ def timing() -> None:
     yield
     ellapsed_time = time() - start
     m = ellapsed_time/60
-    print("[TIMER] Process ended - Elapsed: {:.2f} minutes".format(m))
+    print("[TIMER] Process ended - Lasted: {:.2f} minutes".format(m))
 # ------------------------------------------------------------------------
 _METRICS_ = {func.__name__: func for func in [
     DT.f1_over_bin_cross,
@@ -123,8 +123,52 @@ def extract_scores(metric=[], precision=[]):
         scores = pd.DataFrame(json.load(score_file)).T
     return scores.sort_values(by='score', ascending=False)
 # ------------------------------------------------------------------------
+def get_score(df_x_train, df_y_true, labels, metric, precision):
+    with timing():
+        # thresholds = dt.dyn_thresh_single(df_y_pred, df_y_true, labels, precision=3)
+        thresholds = DT.compute_multithread(
+            input_data=df_x_train,
+            y_true=df_y_true,
+            labels=labels,
+            metric=metric,
+            precision=precision,
+            workers=12,
+        )
 
+    df_y_train = apply_thresholds(thresholds, df_x_train)
+    return thresholds, evaluate(df_y_true, df_y_train)
 # ------------------------------------------------------------------------
+def export_to_csv(dataset, thresholds, metric, precision):
+    df_y = apply_thresholds(thresholds, dataset)
+    df_y.to_csv(CSV_OUTPUT_TEST % (metric.__name__, precision))
+    df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
+    df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (metric.__name__, precision))
+# ------------------------------------------------------------------------
+def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
+    
+    combinations = generate_configs(
+        list(_METRICS_.values()),   # metric functions
+        list(range(1, 11))          # precision levels
+    )
+
+    dump_scores(combinations, df_x_train, df_y_true, labels)
+
+    scores = extract_scores()
+    best_metric, best_precision, _ = scores.iloc[0].values
+    print('# Best score - metric: %s precision: %i'%(best_metric, best_precision))
+
+    thresholds = DT.compute_multithread(
+        input_data  = df_x_train,
+        y_true      = df_y_true,
+        labels      = labels,
+        metric      = _METRICS_[best_metric],
+        precision   = best_precision,
+        workers     = 12,
+        verbose     = True
+    )
+
+    export_to_csv(df_x_test, thresholds, _METRICS_[best_metric], best_precision)
+#
 if __name__ == '__main__':
     
     # -----
@@ -159,73 +203,34 @@ if __name__ == '__main__':
                 _PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
 
     print(param_string % (param, mode, metric.__name__, precision))
-    # -----
 
+    # -----
+    df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
+    df_x_train = pd.read_csv(CSV_FILE_Y_PRED, index_col=0, sep=',') # fuzzy classification to apply thresholding to
+    df_x_test = pd.read_csv(CSV_FILE_X_TEST, index_col=0, sep=',') # data to predict for grading over at the challenge page
+    labels = pd.read_csv(CSV_FILE_LABELS, index_col=0, sep=',')
+
+    # -----
     if mode:
 
-        df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
-        df_x_train = pd.read_csv(CSV_FILE_Y_PRED, index_col=0, sep=',') # fuzzy classification to apply thresholding to
-        df_x_test = pd.read_csv(CSV_FILE_X_TEST, index_col=0, sep=',') # data to predict for grading over at the challenge page
-        labels = pd.read_csv(CSV_FILE_LABELS, index_col=0, sep=',')
-        
         if (mode in [1, 2]):
 
-            with timing():
-            # thresholds = dt.dyn_thresh_single(df_y_pred, df_y_true, labels, precision=3)
-                thresholds = DT.compute_multithread(
-                    input_data=df_x_train,
-                    y_true=df_y_true,
-                    labels=labels,
-                    metric=metric,
-                    precision=precision,
-                    workers=12,
-                )
-
-            df_y_train = apply_thresholds(thresholds, df_x_train)
-            f1score = evaluate(df_y_true, df_y_train)
+            thresholds, f1score = get_score(
+                df_x_train, 
+                df_y_true, 
+                labels, 
+                metric, 
+                precision
+            )
 
             print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
             print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
 
             if (mode == 2):
-                # Mode 2: Compute test
-                df_y_test = apply_thresholds(thresholds, df_x_test)
-                df_y_test.to_csv(CSV_OUTPUT_TEST %
-                                    (metric.__name__, precision))
-
-                df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
-                df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS %
-                                    (metric.__name__, precision))
+                export_to_csv(df_x_test, thresholds, metric, precision)
 
         elif (mode == 3):
-            # Mode 3: Compute all & Output best
-
-            combinations = generate_configs(
-                list(_METRICS_.values()),   # metric functions
-                list(range(1, 11))          # precision levels
-            )
-
-            dump_scores(combinations, df_x_train, df_y_true, labels)
-
-            scores = extract_scores()
-            best_metric, best_precision, score = scores.iloc[0].values
-            print('# Best score - metric: %s precision: %i'%(best_metric, best_precision))
-
-            thresholds = DT.compute_multithread(
-                input_data  = df_x_train,
-                y_true      = df_y_true,
-                labels      = labels,
-                metric      = _METRICS_[best_metric],
-                precision   = best_precision,
-                workers     = 12,
-                verbose     = True
-            )
-
-            df_y_test = apply_thresholds(thresholds, df_x_test)
-            df_y_test.to_csv(CSV_OUTPUT_TEST % (best_metric, best_precision))
-
-            df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
-            df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (best_metric, best_precision))
+            compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels)
 
     else:
         
@@ -269,13 +274,3 @@ if __name__ == '__main__':
 
 
     print("[DEBUG] Done.")
-
-"""
-Relations entre catégories:
-mewo-lables.csv: les 249 colonnes avec leur catégorie et classe correspondantes
-    - proximité entre certaines colonnes? Pour une ligne, si telle ou telle colonne 
-      classifiée comme active, donner plus de poids à une autre ?
-    - utiliser le train_set pour déterminer une table de croisement des features donnant
-      leur proximité les unes des autres (séparées par classes).
-    - faire une table de croisement entre les catégories
-"""
