@@ -136,6 +136,10 @@ def get_score(df_x_train, df_y_true, labels, metric, precision):
         )
 
     df_y_train = apply_thresholds(thresholds, df_x_train)
+
+    print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
+    print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
+
     return thresholds, evaluate(df_y_true, df_y_train)
 # ------------------------------------------------------------------------
 def export_to_csv(dataset, thresholds, metric, precision):
@@ -222,9 +226,6 @@ if __name__ == '__main__':
                 metric, 
                 precision
             )
-
-            print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
-            print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
 
             if (mode == 2):
                 export_to_csv(df_x_test, thresholds, metric, precision)

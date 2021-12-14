@@ -83,7 +83,10 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
 
         unit /= 10
     
-    if (verbose): print("{:<30s}{:>10.10f}".format(input_column.name, best_t))
+    if (verbose): 
+        line = "{:<30s}{:>10.%if}" % precision
+        print(line.format(input_column.name, best_t))
+        
     return best_t
 # ------------------------------------------------------------------------
 def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3, workers=32, verbose=True):
