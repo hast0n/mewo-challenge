@@ -8,8 +8,8 @@
       "name": "Dynamic Thresholding",
       "type": "python",
       "request": "launch",
-      "program": "${file}",
-      "console": "integratedTerminal",
+      "program": "${workspaceFolder}/main.py",
+      "console": "externalTerminal",
       "args": ["3", "f1_score", "3"]
     }
   ]

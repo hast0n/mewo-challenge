@@ -118,7 +118,7 @@ def dump_scores(combs, df_y_pred, df_y_true, labels, append=True):
 
     return score_dict
 # ------------------------------------------------------------------------
-def extract_scores(metric:T.List[T.Literal]=[], precision:T.List[T.Literal]=[]):
+def extract_scores(metric=[], precision=[]):
     with open(JSON_TRAIN_SCORE_FILE, 'r') as score_file:
         scores = pd.DataFrame(json.load(score_file)).T
     return scores.sort_values(by='score', ascending=False)
