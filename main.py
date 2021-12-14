@@ -205,7 +205,7 @@ if __name__ == '__main__':
 
             scores = extract_scores()
             best_metric, best_precision, score = scores.iloc[0].values
-            print('# Best score: metric: %s precision: %i'%(best_metric, best_precision))
+            print('# Best score - metric: %s precision: %i'%(best_metric, best_precision))
 
             thresholds = DT.compute_multithread(
                 input_data  = df_y_pred,
@@ -225,6 +225,8 @@ if __name__ == '__main__':
 
     else:
         # Mode 0: Test section
+        
+
         pass
 
 print("[DEBUG] Done.")
