@@ -27,7 +27,6 @@ The project directory should look like this:
 ├── main.py
 ├── dynamic_thresholding.py
 ├── test_X_nPKMRWK.csv
-├── test_y.dummy_KMszgeM.csv
 ├── train_X_beAW6y8.csv
 └── train_y_YZCqwbD.csv
 ```
