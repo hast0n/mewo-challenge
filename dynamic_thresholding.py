@@ -42,12 +42,12 @@ def fixed_thresholding(input_data, labels, threshold):
 
     output_data = input_data > threshold    
 
-    for col in output_data.columns:
-        output_data[col].values[:] = 0
+    # for col in output_data.columns:
+    #     output_data[col].values[:] = 0
     
-    for i,j in enumerate(labels.columns[:]):
-        _tmp = [int(v >= thresholds[i]) for v in output_data[j]]
-        output_data[j] = _tmp
+    # for i,j in enumerate(labels.columns[:]):
+    #     _tmp = [int(v >= thresholds[i]) for v in output_data[j]]
+    #     output_data[j] = _tmp
 
     return output_data.astype(int)
 # ------------------------------------------------------------------------
