@@ -136,12 +136,13 @@ def get_score(df_x_train, df_y_true, labels, metric, precision):
             workers=12,
         )
 
-    df_y_train = apply_thresholds(thresholds, df_x_train)
+    df_y = apply_thresholds(thresholds, df_x_train)
+    f1score = evaluate(df_y_true, df_y)
 
     print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
     print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
 
-    return thresholds, evaluate(df_y_true, df_y_train)
+    return thresholds, evaluate(df_y_true, df_y)
 # ------------------------------------------------------------------------
 def export_to_csv(dataset, metric=None, precision=0, thresholds=None):
 
@@ -240,16 +241,30 @@ if __name__ == '__main__':
 
     else:
         
-        _thresh = 0.5
-        df_y_test = DT.fixed_thresholding(df_x_train, labels, _thresh)
-        # df_y_test = DT.fixed_thresholding(df_x_train, labels, [_thresh]*248)
-        score = evaluate(df_y_true, df_y_test)
-        print(np.any(df_y_test.apply(any)))
-        print("[DEBUG] F1 score: %f" % score)
+        # for t in np.arange(0.2, 0.3, 0.01):
+        # for t in np.arange(0.23, 0.25, 0.001):
+        for t in np.arange(0.243, 0.244, 0.0001): # best t at 0.2432
+            thresholds = {g:t for g in labels.columns} 
+
+            df_y_train = apply_thresholds(thresholds, df_x_train)
+            score = evaluate(df_y_true, df_y_train)
+            print("{:<6.4f}{:>10.6f}".format(t, score))
+
+        # np.all(
+        #     apply_thresholds({g:.5 for g in labels.columns}, df_x_test)\
+        #     == apply_thresholds({g:.2432 for g in labels.columns}, df_x_test)
+        # )
+
+        # _t = .24
+        # thresholds = {g:_t for g in labels.columns} 
+        # df_y_train = apply_thresholds(thresholds, df_x_test)
+        # filename = CSV_TEST_OUTPUT_FOLD + 'test_y_ft_{:.2f}.csv'
+        # df_y_test.to_csv(filename.format(_t))
 
         # filename = CSV_TEST_OUTPUT_FOLD + 'test_y_ft_{:.1f}.csv'
         # df_y_test.to_csv(filename.format(_thresh))
 
+        # --- Tests on y set ---
         # Are there any columns empty?
         # zero_cols = df_y_true.any(axis='index')
         # print(zero_cols.all()) # Nope!
