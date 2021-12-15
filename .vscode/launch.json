@@ -10,7 +10,7 @@
       "request": "launch",
       "program": "${workspaceFolder}/main.py",
       "console": "externalTerminal",
-      "args": ["0", "f1_score", "3"]
+      "args": ["2", "f1_score", "3"]
     }
   ]
 }
