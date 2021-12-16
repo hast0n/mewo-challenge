@@ -38,10 +38,11 @@ Them `main.py` file allows to you compute thresholds by columns. You can choose 
 ## Metrics
 
 There are several metrics availables:
-- F1 Score over Binary Crossentropy (`f1_over_bin_cross`)
-- Standard F1 Score (`f1_score`)
+<!-- - F1 Score over Binary Crossentropy (`f1_over_bin_cross`) -->
+- F1 Score (`f1_score`)
+<!-- - Accuracy (`accuracy`) -->
 - Matthews Correlation Coefficient (`matthews_corr`)
-- Binary Crossentropy (`bin_cross`)
+<!-- - Binary Crossentropy (`bin_cross`) -->
 - Average Precision Score (`pr_auc`)
 
 ## Precision
@@ -60,7 +61,7 @@ The program has 3 execution modes:
 
 To run the program, use the following scheme:
 ```
-python main.py <MODE> <METRIC> <PRECISION>
+python main.py [MODE] [METRIC] [PRECISION]
 ```
 
 For example, to export the `(matthews_corr, 3)` pair, run the following:
