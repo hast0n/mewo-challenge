@@ -73,19 +73,19 @@ optional arguments:
                         Number of decimals to compute for thresholds.
 ```
 
-For example, to export the `(matthews_corr, 3)` pair, run the following:
+***For example, to export the `(matthews_corr, 3)` pair, run the following:***
 
 ```bash
 python main.py -e 2 -m matthews_corr -p 3
 ```
 
-**To run the 3rd execution mode, use the following:**
+***To run the 3rd execution mode, use the following:***
 
 ```bash
 python main.py --execution-mode 3
 ```
 
-In case of an invalid arguments passed, the program will default to the following run profile
+***In case of an invalid arguments passed, the program will default to the following run profile***
 
 ```bash
 python main.py -e 1 -m f1_score -p 3
