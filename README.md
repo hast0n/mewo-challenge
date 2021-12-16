@@ -14,7 +14,7 @@ Clone the repo.
 
 Download x_train (input data of the training set), y_train (output data of the training set) and x_test from the challenge web page and copy them at the project root.
 
-The project directory should look like this:
+The project directory should at least contain this tree:
 
 ```
 .
@@ -57,27 +57,37 @@ The program has 3 execution modes:
 3. Computes every `(metric, precision)` pair and returns the one with the best F1 Score. Also applies & exports the thresholds for the test set. The operation may take a while.
 4. (Debug)
 
-## Run
+## Run script
 
 To run the program, use the following scheme:
 ```
-python main.py [MODE] [METRIC] [PRECISION]
+usage: main.py [-h] -e MODE [-m METRIC] [-p PRECISION]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  -e MODE, --execution-mode MODE
+                        Execution mode.
+  -m METRIC, --metric METRIC
+                        Metric used to compute classification score.
+  -p PRECISION, --precision PRECISION
+                        Number of decimals to compute for thresholds.
 ```
 
 For example, to export the `(matthews_corr, 3)` pair, run the following:
 
 ```bash
-python main.py 2 matthews_corr 3
+python main.py -e 2 -m matthews_corr -p 3
 ```
 
 To run the 3rd execution mode, use the following:
 
 ```bash
-python main.py 3
+python main.py --execution-mode 3
 ```
 
 In case of an invalid arguments passed, the program will default to the following run profile
 
 ```bash
-python main.py 2 f1_score 3
+python main.py -e 1 -m f1_score -p 3
 ```
+Which corresponds to computing and displaying results with the F1 Score metric and a precision level of 3 decimals for each threshold 
