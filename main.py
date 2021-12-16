@@ -37,19 +37,24 @@ parser = argparse.ArgumentParser()
 parser.add_argument("-e", "--execution-mode",
                     help="Execution mode.",
                     dest='mode',
-                    # choices=_MODE_DOMAIN_,
+                    type=int,
+                    metavar="MODE",
+                    choices=_MODE_DOMAIN_,
                     default=_DEFAULT_MODE_,
                     required=True
                     )
-parser.add_argument("-n", "--metric",
+parser.add_argument("-m", "--metric",
                     help="Metric used to compute classification score.",
                     default=_DEFAULT_METRIC_,
+                    metavar="METRIC",
                     choices=_METRIC_DOMAIN_
                     )
 parser.add_argument("-p", "--precision",
                     help="Number of decimals to compute for thresholds.",
-                    type=int, default=_DEFAULT_PRECISION_, 
-                    # choices=_PRECISION_DOMAIN_
+                    type=int, 
+                    default=_DEFAULT_PRECISION_,
+                    metavar="PRECISION",
+                    choices=_PRECISION_DOMAIN_
                     )
 parser.add_argument("-v", "--verbosity",
                     help="Verbosity.",
@@ -204,9 +209,9 @@ def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
 if __name__ == '__main__':
     
     args = parser.parse_args()
-    mode = int(args.mode)
-    metric = args.metric
-    precision = int(args.precision)
+    mode = args.mode
+    metric = _METRICS_[args.metric]
+    precision = args.precision
     verbosity = bool(args.verbosity)
         
     # -----
