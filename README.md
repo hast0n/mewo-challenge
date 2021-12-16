@@ -90,4 +90,4 @@ python main.py --execution-mode 3
 ```bash
 python main.py -e 1 -m f1_score -p 3
 ```
-Which corresponds to computing and displaying results with the F1 Score metric and a precision level of 3 decimals for each threshold
+Which corresponds to computing and displaying results with the F1 Score metric and a precision level of 3 decimals for each threshold.
