@@ -57,10 +57,10 @@ parser.add_argument("-p", "--precision",
                     metavar="PRECISION",
                     choices=_PRECISION_DOMAIN_
                     )
-parser.add_argument("-v", "--verbosity",
-                    help="Verbosity.",
-                    action="store_false"
-                    )
+# parser.add_argument("-v", "--verbosity",
+#                     help="Verbosity.",
+#                     action="store_false"
+#                     )
 # ------------------------------------------------------------------------
 MAIN_FOLDER_PATH = './' # Interoperability with Google Collab
 
@@ -221,7 +221,7 @@ if __name__ == '__main__':
     mode = args.mode
     metric = _METRICS_[args.metric]
     precision = args.precision
-    verbosity = bool(args.verbosity)
+    # verbosity = bool(args.verbosity)
 
     # -----
     df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
