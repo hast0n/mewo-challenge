@@ -6,7 +6,6 @@ from contextlib import contextmanager
 import numpy as np
 import pandas as pd
 import sklearn.metrics as skm
-from tensorflow.python.eager.function import Function
 import dynamic_thresholding as DT
 import typing as T
 from time import time
@@ -213,39 +212,6 @@ if __name__ == '__main__':
     metric = _METRICS_[args.metric]
     precision = args.precision
     verbosity = bool(args.verbosity)
-        
-    # -----
-    # param_string = "[DEBUG] using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
-    # warn_string = "[WARN] launch parameter \"%s\" wasn't satisfied (must be in %s), using default (%s)"
-    # param, mode, precision, metric = "default", _DEFAULT_MODE_, _DEFAULT_PRECISION_, _DEFAULT_METRIC_
-
-    # if (len(sys.argv) > 1):
-    #     param = "launch"
-
-    #     try:
-    #         _val = int(sys.argv[1])
-    #         assert(int(sys.argv[1]) in _MODE_DOMAIN_)
-    #         mode = _val
-    #     except:
-    #         print(warn_string % ("mode", str_range(_MODE_DOMAIN_), _DEFAULT_MODE_))
-
-    #     try:
-    #         _val = sys.argv[2]
-    #         assert(_val in _METRIC_DOMAIN_)
-    #         metric = _METRICS_[_val]
-    #     except:
-    #         print(warn_string % ("metric", '|'.join(
-    #             _METRIC_DOMAIN_), _DEFAULT_METRIC_.__name__))
-
-    #     try:
-    #         _val = int(sys.argv[3])
-    #         assert(_val in _PRECISION_DOMAIN_)
-    #         precision = _val
-    #     except:
-    #         print(warn_string % ("precision", str_range(
-    #             _PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
-
-    # print(param_string % (param, mode, metric.__name__, precision))
 
     # -----
     df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
@@ -283,53 +249,6 @@ if __name__ == '__main__':
             df_y_train = apply_thresholds(thresholds, df_x_train)
             score = evaluate(df_y_true, df_y_train)
             print("{:<6.4f}{:>10.6f}".format(t, score))
-
-        # np.all(
-        #     apply_thresholds({g:.5 for g in labels.columns}, df_x_test)\
-        #     == apply_thresholds({g:.2432 for g in labels.columns}, df_x_test)
-        # )
-
-        # _t = .24
-        # thresholds = {g:_t for g in labels.columns} 
-        # df_y_train = apply_thresholds(thresholds, df_x_test)
-        # filename = CSV_TEST_OUTPUT_FOLD + 'test_y_ft_{:.2f}.csv'
-        # df_y_test.to_csv(filename.format(_t))
-
-        # filename = CSV_TEST_OUTPUT_FOLD + 'test_y_ft_{:.1f}.csv'
-        # df_y_test.to_csv(filename.format(_thresh))
-
-        # --- Tests on y set ---
-        # Are there any columns empty?
-        # zero_cols = df_y_true.any(axis='index')
-        # print(zero_cols.all()) # Nope!
-
-        # Are there any lines empty?
-        # zero_rows = df_y_true.any(axis='columns')
-        # print(zero_rows.all()) # Nope!
-
-        # tags = labels.columns.to_list()
-        # classes = labels.T['class']
-        # categories = labels.T['category']
-        # # --- 
-        # genres = classes[classes == 'Genres'].index.to_list()
-        # instruments = classes[classes == 'Instruments'].index.to_list()
-        # moods = classes[classes == 'Moods'].index.to_list()
-        # ---
-        # genres_corr = df_y_true[genres].corr() # corrélation entre les colonnes associées à la classe 'Genres'
-        # instruments_corr = df_y_true[instruments].corr() # corrélation entre les colonnes associées à la classe 'Instruments'
-        # moods_corr = df_y_true[moods].corr() # corrélation entre les colonnes associées à la classe 'Moods'
-        # --- 
-        # col_to_cat = df_y_true.rename(columns={col:categories[col] for col in tags})
-        # genres_cat_corr = col_to_cat.corr()
-
-        # genres_cat_corr_avg = pd.DataFrame(columns=categories)
-        # for cat in categories: # Bad
-        #     _cols = genres_cat_corr[cat]
-        #     if _cols.shape[1] > 1: pass
-
-
-        #_t = col_to_cat_corr['genres-jazz']
-        # np.mean(_t[_t != 1].T)
 
 
     print("[DEBUG] Done.")
