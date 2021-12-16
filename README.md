@@ -78,5 +78,5 @@ python main.py 3
 In case of an invalid arguments passed, the program will default to the following run profile
 
 ```bash
-python main.py 1 f1_score 3
+python main.py 2 f1_score 3
 ```
