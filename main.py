@@ -12,16 +12,18 @@ from time import time
 import argparse
 # ------------------------------------------------------------------------
 _METRICS_ = {func.__name__: func for func in [
-    DT.f1_over_bin_cross,
-    DT.f1_score,
-    DT.bin_cross,
-    DT.matthews_corr,
-    DT.pr_auc
+    # DT.f1_over_bin_cross,
+    # DT.accuracy,
+    # DT.log_loss,
     # dt.cat_cross,
     # dt.sparse_cat_cross
+    # DT.bin_cross,
+    DT.f1_score,
+    DT.matthews_corr,
+    DT.pr_auc
 ]}
 # ------------------------------------------------------------------------
-_DEFAULT_METRIC_ = _METRICS_[DT.f1_score.__name__]
+_DEFAULT_METRIC_ = DT.f1_score.__name__
 _DEFAULT_PRECISION_ = 3
 _DEFAULT_MODE_ = 2
 
@@ -173,12 +175,20 @@ def get_score(df_x_train, df_y_true, labels, metric, precision):
 def export_to_csv(dataset, metric=None, precision=0, thresholds=None):
 
     metric_name = metric.__name__ if callable(metric) else str(metric)
+    df_y_filename = CSV_OUTPUT_TEST % (metric_name, precision)
+
     df_y = apply_thresholds(thresholds, dataset)
-    df_y.to_csv(CSV_OUTPUT_TEST % (metric_name, precision))
+    df_y.to_csv(df_y_filename)
+
+    print("[INFO] Exported classification to %s" % df_y_filename)
 
     if thresholds is not None:
+        thresh_filename = CSV_OUTPUT_THRESHOLDS % (metric_name, precision)
+
         df_thresh = pd.DataFrame.from_dict(thresholds, orient='index')
-        df_thresh.to_csv(CSV_OUTPUT_THRESHOLDS % (metric_name, precision))
+        df_thresh.to_csv(thresh_filename)
+        
+        print("[INFO] Exported thresholds to %s" % thresh_filename)
 # ------------------------------------------------------------------------
 def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
     

@@ -213,5 +213,90 @@
         "metric": "pr_auc", 
         "precision": 3, 
         "score": 0.5399655973894372
+    }, 
+    "accuracy_1": {
+        "metric": "accuracy", 
+        "precision": 1, 
+        "score": 0.4242646189647972
+    }, 
+    "accuracy_2": {
+        "metric": "accuracy", 
+        "precision": 2, 
+        "score": 0.4347095752781165
+    }, 
+    "accuracy_3": {
+        "metric": "accuracy", 
+        "precision": 3, 
+        "score": 0.43512394956689227
+    }, 
+    "accuracy_4": {
+        "metric": "accuracy", 
+        "precision": 4, 
+        "score": 0.43528202373142244
+    }, 
+    "pr_auc_4": {
+        "metric": "pr_auc", 
+        "precision": 4, 
+        "score": 0.5401157835620137
+    }, 
+    "accuracy_5": {
+        "metric": "accuracy", 
+        "precision": 5, 
+        "score": 0.43529745661993624
+    }, 
+    "pr_auc_5": {
+        "metric": "pr_auc", 
+        "precision": 5, 
+        "score": 0.5401428422666789
+    }, 
+    "accuracy_6": {
+        "metric": "accuracy", 
+        "precision": 6, 
+        "score": 0.43530002153332753
+    }, 
+    "pr_auc_6": {
+        "metric": "pr_auc", 
+        "precision": 6, 
+        "score": 0.5401439989998502
+    }, 
+    "accuracy_7": {
+        "metric": "accuracy", 
+        "precision": 7, 
+        "score": 0.43530002153332753
+    }, 
+    "pr_auc_7": {
+        "metric": "pr_auc", 
+        "precision": 7, 
+        "score": 0.5401439989998502
+    }, 
+    "accuracy_8": {
+        "metric": "accuracy", 
+        "precision": 8, 
+        "score": 0.43530002153332753
+    }, 
+    "pr_auc_8": {
+        "metric": "pr_auc", 
+        "precision": 8, 
+        "score": 0.5401439989998502
+    }, 
+    "accuracy_9": {
+        "metric": "accuracy", 
+        "precision": 9, 
+        "score": 0.43530002153332753
+    }, 
+    "pr_auc_9": {
+        "metric": "pr_auc", 
+        "precision": 9, 
+        "score": 0.5401439989998502
+    }, 
+    "accuracy_10": {
+        "metric": "accuracy", 
+        "precision": 10, 
+        "score": 0.43530002153332753
+    }, 
+    "pr_auc_10": {
+        "metric": "pr_auc", 
+        "precision": 10, 
+        "score": 0.5401439989998502
     }
 }
