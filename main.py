@@ -10,15 +10,7 @@ from tensorflow.python.eager.function import Function
 import dynamic_thresholding as DT
 import typing as T
 from time import time
-# ------------------------------------------------------------------------
-@contextmanager
-def timing() -> None:
-    start = time()
-    print("[TIMER] Started timer")
-    yield
-    ellapsed_time = time() - start
-    m = ellapsed_time/60
-    print("[TIMER] Process ended - Lasted: {:.2f} minutes".format(m))
+import argparse
 # ------------------------------------------------------------------------
 _METRICS_ = {func.__name__: func for func in [
     DT.f1_over_bin_cross,
@@ -32,13 +24,37 @@ _METRICS_ = {func.__name__: func for func in [
 # ------------------------------------------------------------------------
 _DEFAULT_METRIC_ = _METRICS_[DT.f1_score.__name__]
 _DEFAULT_PRECISION_ = 3
-_DEFAULT_MODE_ = 0
+_DEFAULT_MODE_ = 2
 
 _METRIC_DOMAIN_ = _METRICS_.keys()
 _PRECISION_DOMAIN_ = range(1, 11)
 _MODE_DOMAIN_ = range(0, 4)
 
 def str_range(r: range): return "[%i:%i]" % (r[0], r[-1])
+# ------------------------------------------------------------------------
+parser = argparse.ArgumentParser()
+
+parser.add_argument("-e", "--execution-mode",
+                    help="Execution mode.",
+                    dest='mode',
+                    # choices=_MODE_DOMAIN_,
+                    default=_DEFAULT_MODE_,
+                    required=True
+                    )
+parser.add_argument("-n", "--metric",
+                    help="Metric used to compute classification score.",
+                    default=_DEFAULT_METRIC_,
+                    choices=_METRIC_DOMAIN_
+                    )
+parser.add_argument("-p", "--precision",
+                    help="Number of decimals to compute for thresholds.",
+                    type=int, default=_DEFAULT_PRECISION_, 
+                    # choices=_PRECISION_DOMAIN_
+                    )
+parser.add_argument("-v", "--verbosity",
+                    help="Verbosity.",
+                    action="store_false"
+                    )
 # ------------------------------------------------------------------------
 MAIN_FOLDER_PATH = './' # Interoperability with Google Collab
 
@@ -53,6 +69,15 @@ JSON_TRAIN_SCORE_FILE = CSV_TRAIN_OUTPUT_FOLD + 'mp_scores.json'
 CSV_OUTPUT_TRAIN = CSV_TRAIN_OUTPUT_FOLD + 'train_y_dt_%s_p%s.csv'
 CSV_OUTPUT_TEST = CSV_TEST_OUTPUT_FOLD + 'test_y_dt_%s_p%s.csv'
 CSV_OUTPUT_THRESHOLDS = CSV_TEST_OUTPUT_FOLD + 'thresh_dt_%s_p%s.csv'
+# ------------------------------------------------------------------------
+@contextmanager
+def timing() -> None:
+    start = time()
+    print("[TIMER] Started timer")
+    yield
+    ellapsed_time = time() - start
+    m = ellapsed_time/60
+    print("[TIMER] Process ended - Lasted: {:.2f} minutes".format(m))
 # ------------------------------------------------------------------------
 def config_hash(metric, precision):
     return '%s_%i' % (metric.__name__, precision)
@@ -139,10 +164,7 @@ def get_score(df_x_train, df_y_true, labels, metric, precision):
     df_y = apply_thresholds(thresholds, df_x_train)
     f1score = evaluate(df_y_true, df_y)
 
-    print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
-    print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
-
-    return thresholds, evaluate(df_y_true, df_y)
+    return thresholds, f1score
 # ------------------------------------------------------------------------
 def export_to_csv(dataset, metric=None, precision=0, thresholds=None):
 
@@ -178,41 +200,47 @@ def compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels):
     )
 
     export_to_csv(df_x_test, _METRICS_[best_metric], best_precision, thresholds)
-#
+# ------------------------------------------------------------------------
 if __name__ == '__main__':
     
+    args = parser.parse_args()
+    mode = int(args.mode)
+    metric = args.metric
+    precision = int(args.precision)
+    verbosity = bool(args.verbosity)
+        
     # -----
-    param_string = "[DEBUG] using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
-    warn_string = "[WARN] launch parameter \"%s\" wasn't satisfied (must be in %s), using default (%s)"
-    param, mode, precision, metric = "default", _DEFAULT_MODE_, _DEFAULT_PRECISION_, _DEFAULT_METRIC_
+    # param_string = "[DEBUG] using %s parameters (mode: %s, metric: \"%s\", precision: %s)"
+    # warn_string = "[WARN] launch parameter \"%s\" wasn't satisfied (must be in %s), using default (%s)"
+    # param, mode, precision, metric = "default", _DEFAULT_MODE_, _DEFAULT_PRECISION_, _DEFAULT_METRIC_
 
-    if (len(sys.argv) > 1):
-        param = "launch"
+    # if (len(sys.argv) > 1):
+    #     param = "launch"
 
-        try:
-            _val = int(sys.argv[1])
-            assert(int(sys.argv[1]) in _MODE_DOMAIN_)
-            mode = _val
-        except:
-            print(warn_string % ("mode", str_range(_MODE_DOMAIN_), _DEFAULT_MODE_))
+    #     try:
+    #         _val = int(sys.argv[1])
+    #         assert(int(sys.argv[1]) in _MODE_DOMAIN_)
+    #         mode = _val
+    #     except:
+    #         print(warn_string % ("mode", str_range(_MODE_DOMAIN_), _DEFAULT_MODE_))
 
-        try:
-            _val = sys.argv[2]
-            assert(_val in _METRIC_DOMAIN_)
-            metric = _METRICS_[_val]
-        except:
-            print(warn_string % ("metric", '|'.join(
-                _METRIC_DOMAIN_), _DEFAULT_METRIC_.__name__))
+    #     try:
+    #         _val = sys.argv[2]
+    #         assert(_val in _METRIC_DOMAIN_)
+    #         metric = _METRICS_[_val]
+    #     except:
+    #         print(warn_string % ("metric", '|'.join(
+    #             _METRIC_DOMAIN_), _DEFAULT_METRIC_.__name__))
 
-        try:
-            _val = int(sys.argv[3])
-            assert(_val in _PRECISION_DOMAIN_)
-            precision = _val
-        except:
-            print(warn_string % ("precision", str_range(
-                _PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
+    #     try:
+    #         _val = int(sys.argv[3])
+    #         assert(_val in _PRECISION_DOMAIN_)
+    #         precision = _val
+    #     except:
+    #         print(warn_string % ("precision", str_range(
+    #             _PRECISION_DOMAIN_), _DEFAULT_PRECISION_))
 
-    print(param_string % (param, mode, metric.__name__, precision))
+    # print(param_string % (param, mode, metric.__name__, precision))
 
     # -----
     df_y_true = pd.read_csv(CSV_FILE_Y_TRUE, index_col=0, sep=',') # binary classification (labels)
@@ -221,23 +249,24 @@ if __name__ == '__main__':
     labels = pd.read_csv(CSV_FILE_LABELS, index_col=0, sep=',')
 
     # -----
-    if mode:
+    if (mode in [1, 2]):
 
-        if (mode in [1, 2]):
+        thresholds, f1score = get_score(
+            df_x_train, 
+            df_y_true, 
+            labels, 
+            metric, 
+            precision,
+        )
 
-            thresholds, f1score = get_score(
-                df_x_train, 
-                df_y_true, 
-                labels, 
-                metric, 
-                precision
-            )
+        print("[INFO] Config: (%s, %i)" % (metric.__name__, precision))
+        print("[INFO] Global score using the F1 metric: {0:.10f}".format(f1score))
 
-            if (mode == 2):
-                export_to_csv(df_x_test, metric, precision, thresholds)
+        if (mode == 2):
+            export_to_csv(df_x_test, metric, precision, thresholds)
 
-        elif (mode == 3):
-            compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels)
+    elif (mode == 3):
+        compute_all_and_export_best(df_x_train, df_x_test, df_y_true, labels)
 
     else:
         
@@ -289,7 +318,7 @@ if __name__ == '__main__':
         # genres_cat_corr = col_to_cat.corr()
 
         # genres_cat_corr_avg = pd.DataFrame(columns=categories)
-        # for cat in categories:
+        # for cat in categories: # Bad
         #     _cols = genres_cat_corr[cat]
         #     if _cols.shape[1] > 1: pass
 
