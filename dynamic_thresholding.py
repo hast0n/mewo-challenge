@@ -7,15 +7,17 @@ import sklearn.metrics as skm
 #     CategoricalCrossentropy,
 #     SparseCategoricalCrossentropy,
 # )
-# ------------------------------------------------------------------------
+# ---- Prevent Tensorflow logging ----------------------------------------
 # Log errors only
 # os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # tf.get_logger().setLevel(3) 
-# ------------------------------------------------------------------------
+
+# ---- Tensorflow Metrics Initilization ----------------------------------
 # _BC_    = BinaryCrossentropy()
 # _CC_    = CategoricalCrossentropy()
 # _SCC_   = SparseCategoricalCrossentropy()
-# ------------------------------------------------------------------------
+
+# ----- Evalutation Metrics Definition -----------------------------------
 # def f1_over_bin_cross(dataframe_y_true, dataframe_y_pred):
 #     f1 = skm.f1_score(dataframe_y_true, dataframe_y_pred, average="weighted")
 #     bc = _BC_(dataframe_y_true, dataframe_y_pred)
@@ -44,8 +46,10 @@ def matthews_corr(dataframe_y_true, dataframe_y_pred):
 def pr_auc(dataframe_y_true, dataframe_y_pred):
     aps = skm.average_precision_score(dataframe_y_true, dataframe_y_pred)
     return aps
+
 # ====================== THRESOLDING METHODS =============================
 def fixed_thresholding(input_data, labels, threshold):
+    """Apply one fixed threshold over the entire input_data array"""
 
     output_data = input_data > threshold    
 
@@ -59,7 +63,7 @@ def fixed_thresholding(input_data, labels, threshold):
     return output_data.astype(int)
 # ------------------------------------------------------------------------
 def threshold_worker(input_column, y_true_col, output_format, metric, precision, verbose):
-    
+    """Worker for dynamic threshold multi processing ; one column per worker"""
     # index = 0 --> [sti, sti+1, sti+2] : sti max
     # --> dic[index] = ti : best threshold
     # new range from sti-1 to sti+1
@@ -72,12 +76,13 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
     for p in range(precision):
         thresh_scores = [] # thresholds list
 
+        # for each test threshold
         for t in dic:
             # ---
-            index = input_column.index[input_column >= t]
+            index = input_column.index[input_column >= t] # Get boolean array whether above threshold or not
             column = output_format.copy()
-            column.loc[index] = 1
-            score = metric(y_true_col, column)
+            column.loc[index] = 1 # set to 1 each row with True value
+            score = metric(y_true_col, column) # Compute metric for current threshold
             # ---
             thresh_scores.append(score) # append threshold scores to list
 
@@ -85,10 +90,10 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
         
         if (p+1 >= precision): break
         
-        dic = np.arange(best_t - unit, best_t + unit, unit/10)
-        dic = dic[dic > 0]
+        dic = np.arange(best_t - unit, best_t + unit, unit/10) # Create new threshold list
+        dic = dic[dic > 0] # clear negative or null values
 
-        unit /= 10
+        unit /= 10 # deepen unit
     
     if (verbose): 
         line = "{:<30s}{:>10.%if}" % precision
@@ -96,8 +101,8 @@ def threshold_worker(input_column, y_true_col, output_format, metric, precision,
 
     return best_t
 # ------------------------------------------------------------------------
-def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3, workers=32, verbose=True):
-    
+def compute_multiproc(input_data, y_true, labels, metric=f1_score, precision=3, workers=32, verbose=True):
+    """Main handler for thresholds multi processing"""
     genres = labels.columns[:]
 
     # ---
@@ -140,8 +145,8 @@ def compute_multithread(input_data, y_true, labels, metric=f1_score, precision=3
     # ---
     return thresholds
 # ------------------------------------------------------------------------
-def compute_singlethread(input_data, y_true, labels, metric=f1_score, precision=3):
-    
+def compute_singleproc(input_data, y_true, labels, metric=f1_score, precision=3):
+    """Dynamic thresholding on one process"""
     genres = labels.columns[:]
     thresholds = {lab:0 for lab in genres} # final threshold list
 
