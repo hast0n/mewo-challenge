@@ -63,11 +63,14 @@ def fixed_thresholding(input_data, labels, threshold):
     return output_data.astype(int)
 # ------------------------------------------------------------------------
 def threshold_worker(input_column, y_true_col, output_format, metric, precision, verbose):
-    """Worker for dynamic threshold multi processing ; one column per worker"""
-    # index = 0 --> [sti, sti+1, sti+2] : sti max
-    # --> dic[index] = ti : best threshold
-    # new range from sti-1 to sti+1
-    # [x, x, x, x, x] --> [x, [x, x, x, x, x], x, x, x] --> [x, [x, x, [x, x, x, x, x], x, x], x, x, x]
+    """
+    Worker for dynamic threshold multi processing ; one column per worker
+    
+    iter k: best(metric([t1, t2, t3])) = t2
+    >> dic = new range from t2-unit to t2+unit with 20 steps
+    
+    [x, x, x, x, x] --> [x, [x, x, x, x, x], x, x, x] --> [x, [x, x, [x, x, x, x, x], x, x], x, x, x]
+    """
 
     unit = 0.1; best_t = 0
     dic = np.arange(1, 10) * unit
