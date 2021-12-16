@@ -59,7 +59,7 @@ The program has 3 execution modes:
 
 ## Run script
 
-To run the program, use the following scheme:
+**To run the program, use the following scheme:**
 ```
 usage: main.py [-h] -e MODE [-m METRIC] [-p PRECISION]
 
@@ -79,7 +79,7 @@ For example, to export the `(matthews_corr, 3)` pair, run the following:
 python main.py -e 2 -m matthews_corr -p 3
 ```
 
-To run the 3rd execution mode, use the following:
+**To run the 3rd execution mode, use the following:**
 
 ```bash
 python main.py --execution-mode 3
